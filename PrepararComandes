@@ -1,0 +1,85 @@
+  static void prepararComandes(File file) throws IOException, SQLException {
+        String proveidorAct = "";
+        System.out.println(proveidorAct);
+        PreparedStatement ps1 = connexioBD.prepareStatement(proveidorAct);
+        ps1.executeQuery();
+        ResultSet rs1 = ps1.executeQuery();
+        while (rs1.next()) {
+            System.out.println("nom proveidor: " + rs1.getString(1) + " correu: " + rs1.getString(2) + " Telefon: "
+                    + rs1.getString(3) + " id prov: " + rs1.getString(4) + "  id producte: " + rs1.getString(5)
+                    + "  nom: " + rs1.getString(6) + "  quantitat: " + rs1.getString(7) + "\b");
+            System.out.println("");
+        }
+
+        if (!proveidorAct.equals(proveidorAct)) {
+            proveidorAct = proveidorAct;
+            System.out.println("canvi de proveidor;" + proveidorAct);
+        }
+
+    }
+
+    static void prepararComandes2() throws IOException, SQLException {
+        System.out.println("preparar Comandes");
+
+        FileWriter fw = null;
+        BufferedWriter bw = null;
+        PrintWriter pw = null;
+
+        System.out.println("Creem el fitxer de comanda");
+
+        // Preparem la consulta
+        String consulta = "SELECT A.nom, B.id_producte, C.nom,C.quantitat from proveidor A, porta B, producte C where B.id_proveidor=A.id and B.id_producte=C.id and C.quantitat<20000 order by A.nom;";
+        PreparedStatement ps = connexioBD.prepareStatement(consulta);
+        // llencem la consulta
+        ResultSet rs = ps.executeQuery();
+        if (rs.next()) {
+
+            String actproveidor = rs.getString("proveidor");
+            pw.close();
+            pw = escriureCapçaleraComanda(actproveidor);
+            // ESCRIVIM CAPÇALERA DEL FITXER:
+            // creeem el fitxer
+            // escrivim dades empresa
+            // escrivim linia descriptiva
+
+    
+
+            do {
+                System.out.println("numproveidor: " + rs.getInt("numproveidor")
+                        + "quantitat" + rs.getString("quantitat")
+                        + "codi" + rs.getString("codi"));
+
+                if (actproveidor != rs.getString("proveidor")) {
+                    actproveidor = rs.getString("proveidor");
+                    pw.close();
+                    pw = escriureCapçaleraComanda(actproveidor);
+
+                }
+                pw.printf("num proveidor", "quantitat", "codi");
+
+                int numproveidor = rs.getInt("numproveidor");
+                String quantitat = rs.getString("quantitat");
+                int codi = rs.getInt("codi");
+                String quantitatString = rs.getString("quantitat");
+                String codisString = rs.getString("codi");
+
+                pw.println("  " + numproveidor + "\t" + quantitat + codi);
+
+            } while (rs.next());
+            pw.close();
+            fw.close();
+
+        }
+    }
+
+    static PrintWriter escriureCapçaleraComanda(String proveidor) throws IOException {
+        FileWriter fw = new FileWriter(PATHCOMANDES + proveidor + "" + LocalDate.now() + ".txt");
+        BufferedWriter bw = new BufferedWriter(fw);
+        PrintWriter pw = new PrintWriter(bw);
+
+        pw.println("*****************************COMANDA***************************");
+        pw.println("DADES EMPRESA");
+        pw.println("DADES PROVEIDOR");
+        pw.printf("num proveidor", "quantitat", "codi");
+        return pw;
+    }
