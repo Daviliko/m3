@@ -1,0 +1,67 @@
+static void actualitzarStock2() throws IOException, SQLException {
+
+        File fitxer = new File(ENTRADESPENDENTS);
+        fitxer.mkdirs();
+
+        File fitxer2 = new File(ENTRADESSORTIDA);
+        fitxer2.mkdirs();
+
+        if (fitxer.isDirectory()) {
+
+            File[] fitxers = fitxer.listFiles();
+
+            for (int i = 0; i < fitxers.length; i++) {
+                System.out.println(fitxers[i].getName());
+                actualitzarFitxerBD(fitxers[i]);
+                moureFitxerAProcessat(fitxers[i]);
+            }
+        }
+        if (fitxer2.isDirectory()) {
+
+            File[] fitxers = fitxer2.listFiles();
+
+            for (int i = 0; i < fitxers.length; i++) {
+                System.out.println(fitxers[i].getName());
+                actualitzarFitxerBD(fitxers[i]);
+                moureFitxerAProcessat(fitxers[i]);
+            }
+        }
+
+    }
+
+    static void actualitzarFitxerBD(File fitxer) throws IOException, SQLException {
+        FileReader reader = new FileReader(fitxer);
+
+        BufferedReader buffer = new BufferedReader(reader);
+
+        String linea;
+
+        while ((linea = buffer.readLine()) != null) {
+            System.out.println(linea);
+            int posSep = linea.indexOf(":");
+
+            int id = Integer.parseInt(linea.substring(0, posSep));
+            int unitats = Integer.parseInt(linea.substring(posSep + 1));
+
+            String update = "UPDATE producte SET quantitat=quantitat+? WHERE id=?";
+            PreparedStatement actualitzar = connexioBD.prepareStatement(update);
+            actualitzar.setInt(1, unitats);
+            actualitzar.setInt(2, id);
+
+            actualitzar.executeUpdate();
+
+        }
+        reader.close();
+        buffer.close();
+
+    }
+
+    static void moureFitxerAProcessat(File file) throws IOException, SQLException {
+        FileSystem sistemaFicheros = FileSystems.getDefault();
+        Path origen = sistemaFicheros.getPath(ENTRADESPENDENTS + file.getName());
+        Path desti = sistemaFicheros.getPath(ENTRADESSORTIDA + file.getName());
+
+        Files.move(origen, desti, StandardCopyOption.REPLACE_EXISTING);
+        System.out.println("S'ha mogut a PROCESSATS el fitxer" + file.getName());
+
+    }
