@@ -1,0 +1,418 @@
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.io.Reader;
+import java.io.Writer;
+import java.nio.file.FileSystem;
+import java.nio.file.FileSystems;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.time.LocalDate;
+import java.util.Scanner;
+
+public class provamenu1 {
+    static Connection connexioBD    =null; 
+    static Statement stmt = null;
+    static Connection con = null;
+    static boolean sortir2 = false;
+    static boolean sortir = false;
+    static Scanner sc = new Scanner(System.in);
+    static Scanner teclat = new Scanner(System.in); // system.in perque llegeixi desde consola
+    private static String proveidorAct;
+    static final String ENTRADESPENDENTS = "files/ENTRADES PENDENTS/";
+    static final String ENTRADESSORTIDA = "files/ENTRADES PROCESSADES/";
+    private static final String COMANDES = null;
+    private static final java.io.Writer FileWriter = null;
+    private static final String PATHCOMANDES = null;
+
+    static String [] contprov = new String[100];
+    static int [] contprod = new int[100];
+
+    public static void main(String[] args) throws SQLException, IOException {
+        connexioBD();
+
+        // creacio menu
+
+        do {
+            System.out.println("**********-Menu-***********");
+            System.out.println("1. Gestio productes");
+            System.out.println("2. Actualitzar stock");
+            System.out.println("3. Preparar comandes");
+            System.out.println("4. Analitzar les comandes");
+            System.out.println("5. Sortir");
+            System.out.println("\nTria una opcio:" + "\n");
+
+            int opcio = teclat.nextInt();
+            
+
+            System.out.println("el numero " + opcio);
+
+            // el switch si tries una opcio surt del menu
+
+            switch (opcio) {
+                case 1:
+                    do {
+
+                        System.out.println("1. Llista tots els productes");
+                        System.out.println("2. alta producte");
+                        System.out.println("3. Modifica Producte");
+                        System.out.println("4. Esborrar producte");
+                        System.out.println("s. Sortir");
+                        String sa = sc.next();
+                        char opcio2 = sa.charAt(0);
+                        System.out.println("la opcio: " + opcio2);
+                        switch (opcio2) {
+                            case '1':
+                                llistarProductes();
+
+                                break;
+                            case '2':
+                                altaProducte();
+
+                                break;
+                            case 's':
+                                sortir2 = true;
+                                break;
+
+                        }
+
+                    } while (!sortir2);
+                    break;
+                case 2:
+                    actualitzarStock2();
+                    break;
+                case 3:
+                    prepararComandes();
+                    break;
+                case 4:
+                    AnalitzarLesComandes();
+                    break;
+                case 5:
+                    sortir = true;
+                    break;
+                default:
+                    System.out.println("opcio no valida");
+            }
+        } while (!sortir);
+    }
+
+   
+    private static void AnalitzarLesComandes() {
+    }
+
+
+    private static void prepararComandes() {
+    }
+
+    static void connexioBD() {
+        String servidor = "jdbc:mysql://localhost:3306/";
+        String usuari = "root";
+        String passwd = "client";
+        String bbdd = "projecte";
+
+        try { // El try intenta fer una connexió amb la base de dades.
+            connexioBD = DriverManager.getConnection(servidor + bbdd, usuari, passwd);
+            System.out.println("Connexió amb èxit");
+        } catch (SQLException e) { // Si la connexió no funciona executarà el codi de dins del catch.
+            e.printStackTrace();
+        }
+
+    }
+
+    static void llistarproductes() throws SQLException {
+        ResultSet rs2 = stmt.executeQuery(
+                "select A.nom,A.correu,A.telefon, B.id_proveidor, B.id_producte, C.nom, C.quantitat from proveidor A, porta B, producte C where B.id_proveidor=A.id and b.id_producte=c.id and C.quantitat>20;");
+        while (rs2.next())
+            System.out.println("nom proveidor: " + rs2.getString(1) + " correu: " + rs2.getString(2) + " Telefon: "
+                    + rs2.getString(3) + " id prov: " + rs2.getString(4) + "  id producte: " + rs2.getString(5)
+                    + "  nom: " + rs2.getString(6) + "  quantitat: " + rs2.getString(7) + "\b");
+        System.out.println("");
+    }
+
+    static void llistarProductes() throws SQLException {
+         ResultSet rs2 = stmt.executeQuery(
+        "select * from producte order by quantitat ;");
+         while (rs2.next())
+        System.out.println(rs2.getString(1));
+
+        String consulta = ("select * from producte order by id;");
+        PreparedStatement ps = connexioBD.prepareStatement(consulta);
+        ps.executeQuery();
+        ResultSet rs = ps.executeQuery();
+        while (rs.next()) {
+            System.out.println("id: " + rs.getString("id") + " Preu " + rs.getString("preu") + " codi_cat "
+                    + rs.getString("codi_cat") + " nom "
+                    + rs.getString("nom") + " quantitat " + rs.getString("quantitat"));
+        }
+
+    }
+
+    static void altaProducte() throws SQLException {
+
+        System.out.println("fica el nom del producte:");
+        teclat.nextLine();
+        String nom = teclat.nextLine();
+        System.out.println("ficar el preu de producte ");
+        int preu = teclat.nextInt();
+        System.out.println("ficar el id de categoria de producte ");
+        int id_categoria = teclat.nextInt();
+        System.out.println("ficar la quantitat");
+        int quantitat = teclat.nextInt();
+        String insert = "insert into producte (nom, preu, codi_cat, quantitat) VALUES (?,?,?,?)";
+        PreparedStatement sentencia = connexioBD.prepareStatement(insert);
+        sentencia.setString(1, nom);
+        sentencia.setInt(2, preu);
+        sentencia.setInt(3, id_categoria);
+        sentencia.setInt(4, quantitat);
+
+        if (sentencia.executeUpdate() != 0) {
+            System.out.println("ha insertat " + "nom: " + nom + " preu: " + preu + " id_categoria " + id_categoria
+                    + " quantitat " + quantitat);
+        } else {
+            System.out.println("no insertat");
+        }
+
+        // String insert = ("insert * from producte order by quantitat ;");
+        // PreparedStatement ps = connexioBD.prepareStatement(consulta);
+        // ps.executeQuery();
+        // ResultSet rs= ps.executeQuery();
+        // while (rs.next()) {
+        // System.out.println(rs.getString("id")+rs.getString("preu")+rs.getString("codi_cat")+rs.getString("nom")+rs.getString("quantitat"));
+        // }
+
+    }
+
+    static void Modificaproducte() throws SQLException {
+        System.out.println("modificar el nom del producte:");
+        teclat.nextLine();
+        String nom = teclat.nextLine();
+        System.out.println("modificar preu del producte:");
+        int preu = teclat.nextInt();
+        System.out.println("modificar el id de categoria del producte:");
+        int id_categoria = teclat.nextInt();
+        System.out.println("modificar la quantitat");
+        int quantitat = teclat.nextInt();
+        String insert = "insert into producte (nom, preu, codi_cat, quantitat) VALUES (?, ?, ?, ?)";
+        PreparedStatement sentencia = connexioBD.prepareStatement(insert);
+        sentencia.setString(1, nom);
+        sentencia.setInt(2, preu);
+        sentencia.setInt(3, id_categoria);
+        sentencia.setInt(4, quantitat);
+
+        if (sentencia.executeUpdate() != 0) {
+            System.out.println("ha insertat " + "nom: " + nom + " preu: " + preu + " id_categoria " + id_categoria
+                    + " quantitat " + quantitat);
+        } else {
+            System.out.println("no insertat");
+        }
+    }
+
+    static void actualitzarStock2() throws IOException, SQLException {
+
+        File fitxer2 = new File ("files/ENTRADES PENDENTS");       
+        fitxer2.mkdirs();
+
+       if(fitxer2.isDirectory()){
+           
+           File[] fitxers = fitxer2.listFiles();
+
+           for(int i=0; i<fitxers.length; i++){
+               System.out.println(fitxers [i].getName());
+               actualitzarFitxerBD(fitxers[i]);
+                
+            }
+        
+       }
+        File fitxer3 = new File ("files/ENTRADES PROCESSADES");       
+        fitxer3.mkdirs();
+
+        if(fitxer3.isDirectory()){
+            
+            File[] fitxers = fitxer3.listFiles();
+ 
+            for(int i=0; i<fitxers.length; i++){
+                System.out.println(fitxers [i].getName());
+                actualitzarFitxerBD(fitxers[i]);
+                 
+            
+            }
+            }
+       
+     }
+        
+           static void actualitzarFitxerBD(File fitxer) throws IOException{
+                FileReader reader = new FileReader(fitxer);
+                try (BufferedReader buffer = new BufferedReader(reader)) {
+                    String linea;
+                    while ((linea=buffer.readLine()) != null) {
+                        System.out.println(linea);
+                        
+                    }
+                }
+   }
+    
+
+    static void actualitzarFitxerBD2(File fitxer) throws IOException, SQLException {
+        FileReader reader = new FileReader(fitxer);
+
+        BufferedReader buffer = new BufferedReader(reader);
+
+        String linea;
+
+        while ((linea = buffer.readLine()) != null) {
+            System.out.println(linea);
+            int posSep = linea.indexOf(":");
+
+            int id = Integer.parseInt(linea.substring(0, posSep));
+            int unitats = Integer.parseInt(linea.substring(posSep + 1));
+
+            String update = "UPDATE producte SET quantitat=quantitat+? WHERE id=?";
+            PreparedStatement actualitzar = connexioBD.prepareStatement(update);
+            actualitzar.setInt(1, unitats);
+            actualitzar.setInt(2, id);
+
+            actualitzar.executeUpdate();
+
+        }
+        reader.close();
+        buffer.close();
+
+    }
+
+    static void moureFitxerAProcessat(File file) throws IOException, SQLException {
+        FileSystem sistemaFicheros = FileSystems.getDefault();
+        Path origen = sistemaFicheros.getPath(ENTRADESPENDENTS + file.getName());
+        Path desti = sistemaFicheros.getPath(ENTRADESSORTIDA + file.getName());
+
+        Files.move(origen, desti, StandardCopyOption.REPLACE_EXISTING);
+        System.out.println("S'ha mogut a PROCESSATS el fitxer" + file.getName());
+
+    }
+
+    static void prepararComandes(File file) throws IOException, SQLException {
+        String proveidorAct = "";
+        System.out.println(proveidorAct);
+        PreparedStatement ps1 = connexioBD.prepareStatement(proveidorAct);
+        ps1.executeQuery();
+        ResultSet rs1 = ps1.executeQuery();
+        while (rs1.next()) {
+            System.out.println("num proveidor: " + rs1.getString(1) + " quantitat: " + rs1.getString(2) + " codi: " + "\b");
+            System.out.println("");
+        }
+
+        if (!proveidorAct.equals(proveidorAct)) {
+            proveidorAct = proveidorAct;
+            System.out.println("canvi de proveidor;" + proveidorAct);
+        }
+
+    }
+
+    static void prepararComandes2() throws IOException, SQLException {
+        System.out.println("preparar Comandes");
+
+        FileWriter fw = null;
+        BufferedWriter bw = null;
+        PrintWriter pw = null;
+
+        System.out.println("Creem el fitxer de comanda");
+
+        // Preparem la consulta
+        String consulta = "SELECT *A.nom,A.correu,A.telefon, B.id_proveidor, B.id_producte, C.nom, C.quantitat from proveidor A, porta B, producte C where B.id_proveidor=A.id and b.id_producte=c.id and C.quantitat>20000";
+        PreparedStatement ps = connexioBD.prepareStatement(consulta);
+        // llencem la consulta
+        ResultSet rs = ps.executeQuery();
+        if (rs.next()) {
+
+            String actproveidor = rs.getString("proveidor");
+            pw.close();
+            pw = crearCapçaleraComanda(actproveidor);
+            // ESCRIVIM CAPÇALERA DEL FITXER:
+            // creeem el fitxer
+            // escrivim dades empresa
+            // escrivim linia descriptiva
+
+    
+
+            do {
+                System.out.println("numproveidor: " + rs.getInt("numproveidor")
+                        + "quantitat" + rs.getString("quantitat")
+                        + "codi" + rs.getString("codi"));
+
+                if (actproveidor.equals("proveidor")); {
+                    actproveidor.equals("proveidor");
+                    pw.close();
+                    pw = crearCapçaleraComanda(actproveidor);
+
+                }
+                pw.printf("num proveidor", "quantitat", "codi");
+
+                int numproveidor = rs.getInt("numproveidor");
+                String quantitat = rs.getString("quantitat");
+                int codi = rs.getInt("codi");
+                String quantitatString = rs.getString("quantitat");
+                String codisString = rs.getString("codi");
+
+                pw.println("  " + numproveidor + "\t" + quantitat + codi);
+
+            } while (rs.next());
+            pw.close();
+            fw.close();
+
+        }
+    }
+
+    static PrintWriter crearCapçaleraComanda(String proveidor) throws IOException {
+        LocalDate data=LocalDate.now();
+        FileWriter fw = new FileWriter(PATHCOMANDES + proveidor + "" + data + ".txt");
+        BufferedWriter bw = new BufferedWriter(fw);
+        PrintWriter pw = new PrintWriter(bw);
+
+        pw.println("*****************************COMANDA***************************");
+        pw.println("DADES EMPRESA");
+        pw.println("DADES PROVEIDOR");
+        pw.printf("num proveidor", "quantitat", "codi");
+        return pw;
+    }
+
+       
+
+        //Definir arrays
+        //Emplenar els arrays a mesura que genero les comandes
+
+     static void prepararComandes3() throws IOException, SQLException {
+        int contprov=0;
+        int contprod=0;
+        
+        String select = "A.nom, B.id_producte, C.nom,C.quantitat from proveidor A, porta B, producte C where B.id_proveidor=A.id and B.id_producte=C.id";
+        
+    }
+
+}
+
+
+
+
+
+     
+
+
+
+
+        
+     
+
+
+
+
+
