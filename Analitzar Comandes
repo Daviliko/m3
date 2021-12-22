@@ -1,0 +1,56 @@
+ static void Analitzarlescomandes () throws IOException, SQLException {
+
+        
+            int contprov=0;
+            int contprod=0;
+            
+            String select = "A.nom, B.id_producte, C.nom,C.quantitat from proveidor A, porta B, producte C where B.id_proveidor=A.id and B.id_producte=C.id";
+    
+                //obtenim la nota minima
+                double minim0;
+                int iminim=0;
+        
+                int minim;
+                Object prod2Object;
+                int prod;
+                for (int i=0;i<prod;i++){
+                   int[] prov;
+                if (prov[i]<minim){
+                        int[] valor;
+                        minim=valor[i];
+                        iminim= i;
+                   }
+                }
+            
+                String[] prov;
+                System.out.println("\n" + prov[iminim]+" valor minim: "+minim);
+        
+        
+                //obtenim la nota maxima
+                double maxim=0;
+                int imaxim=0;
+                
+                int prod2;
+                for (int i=0;i<prod2;i++){
+                    double[] prod1;
+                    if (prod1[i]>maxim){
+                        double[] valor;
+                        maxim=(int) valor[i];
+                        imaxim= i;
+                    }
+                } 
+        
+                System.out.println(prov[imaxim]+" valor maxim: "+maxim);
+        
+                    //obtenim la nota mitjana
+                    double mitjana= 0;
+        
+                 double[] prod3;
+                for (int i=0;i<prod3.length;i++){
+                        mitjana=mitjana+prod3[i];
+                        }
+                
+                 System.out.println(mitjana/prod3.length);
+                 System.out.printf("Mitjana: %.2f", mitjana/prod3.length);
+                }
+    }
